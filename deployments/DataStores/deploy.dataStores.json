@@ -1,9 +1,13 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {  },
+    "parameters": {
+        "Environment": { "type": "string" }
+    },
     "variables": {
-        "storageAccountName": "[concat('stamain', uniqueString(resourceGroup().name))]"
+        "storageAccountName": "[concat('stamain', uniqueString(resourceGroup().name))]",
+        "keyVaultName": "[concat('KVL-', parameters('Environment'), '-Main')]",
+        "tenantID": "faa545f6-7339-4a76-af6a-fcf3dc3d2884"
       },
     "resources": [  
         {
@@ -11,12 +15,50 @@
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2017-10-01",
             "sku": {
-              "name": "Standard_LRS "
+              "name": "Standard_LRS"
             },
             "kind": "StorageV2",
             "location": "[resourceGroup().location]",
             "tags": {},
             "properties": {       
+            }
+        },
+        {
+            "name": "[variables('keyVaultName')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2016-10-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {
+                "tenantId": "[variables('tenantID')]",
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
+                },
+                "accessPolicies": [
+                    {
+                        "tenantId": "[variables('tenantID')]",
+                        "objectId": "2c96a115-7f96-4bf2-aca5-1350eeb7778a",
+                        "permissions": {
+                            "keys": [
+                                "encrypt"
+                            ],
+                            "secrets": [
+                                "list"
+                            ],
+                            "certificates": [
+                                "listissuers"
+                            ],
+                            "storage": [
+                                "list"
+                            ]
+                        }
+                    }
+                ],
+                "vaultUri": "string",
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": false
             }
         }
     ],
